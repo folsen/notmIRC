@@ -41,7 +41,7 @@ readCookie = (cookie) ->
   ca = cookie.split(';')
   r = {}
   for cn in ca
-    r[cn.split('=')[0].trim()] = cn.split('=')[1].trim()
+    r[cn.split('=')[0].trim()] = cn.split('=')[1]
   return r
       
 io.on 'connection', (client) ->
