@@ -2,5 +2,7 @@ Needed to run:
 npm install socket.io
 npm install express
 npm install jade
+npm install coffee-script
 
-Not yet: npm install coffee-script
+Download and run with
+coffee server.coffee
