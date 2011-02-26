@@ -1,0 +1,57 @@
+@font-face {
+  font-family: 'Fixedsys';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Fixedsys'), url('../FixedDisplay.ttf') format('truetype');
+}
+
+body, html {
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  font-family: 'Fixedsys';
+}
+
+#chat-window {
+  width:100%;
+  height:100%;
+}
+#chat-window td {
+  margin:0;
+  padding:0;
+  border: 1px solid black;
+  vertical-align:top;
+}
+
+#chat {
+  margin:0;
+  padding:0;
+}
+#chat p {
+  margin-top:3px;
+  margin-bottom:3px;
+}
+
+#topic, #type-bar {
+  height:20px;
+}
+  #text {
+    margin:0px;
+    display:block; 
+    width:100%;
+    padding:0;
+    border-width:0;
+    height:20px;
+    font-family: 'Fixedsys';
+    font-size:15px;
+  }
+.full {
+  height:100%;
+  width:100%;
+}
+#users {
+  list-style:none;
+  margin:0;
+  padding:0;
+}

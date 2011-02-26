@@ -20,7 +20,7 @@ message = (obj) ->
   else if 'updateCookie' of obj
     createCookie 'nick', obj.updateCookie
   else if 'message' of obj
-    el.innerHTML = "#{esc(obj.message[0])} - <b> #{esc(obj.message[1])} :</b> #{esc(obj.message[2])}"
+    el.innerHTML = "[#{esc(obj.message[0])}] &lt;#{esc(obj.message[1])}&gt; #{esc(obj.message[2])}"
   document.getElementById('chat').appendChild(el)
   document.getElementById('chat').scrollTop = 1000000
 
