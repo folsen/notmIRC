@@ -36,27 +36,29 @@ app.listen 8080
 io = io.listen app
 buffer = []
 users = []
-
-clientToUser = (client) ->
-  name: client.sessionId
-
-removeUser = (user) ->
-  i = 0
-  for usr in users
-    if usr is user
-      users.splice i,1
-  i++
-
+  
+readCookie = (cookie) ->
+  ca = cookie.split(';')
+  r = {}
+  for cn in ca
+    r[cn.split('=')[0].trim()] = cn.split('=')[1].trim()
+  return r
+      
 io.on 'connection', (client) ->
-  user = clientToUser client
+  user = { id: client.sessionId, name: "Bob" }
   users.push user
   client.send buffer: buffer
-  client.send users: users
-  client.broadcast addUser: user
-  client.broadcast announcement: "#{user.name} connected"
+  cookiestore = {}
 
   client.on 'message', (message) ->
-    if message.substr(0,1) is '/'
+    if typeof message isnt "string" and 'cookie' of message
+      cookiestore = readCookie message.cookie
+      sys.log sys.inspect cookiestore
+      if 'nick' of cookiestore
+        user.name = cookiestore.nick
+      addUser user
+      sys.log sys.inspect users
+    else if message.substr(0,1) is '/'
       parseCommand message
     else
       parseMessage message
@@ -65,13 +67,26 @@ io.on 'connection', (client) ->
     client.broadcast announcement: "#{user.name} disconnected"
     removeUser user
     client.broadcast removeUser: user
+  
+  addUser = (user) ->
+    client.send users: users
+    client.broadcast addUser: user
+    client.broadcast announcement: "#{user.name} connected"
     
+  removeUser = (user) ->
+    i = 0
+    for usr in users
+      if usr.id is user.id
+        return users.splice i,1
+      i++
+  
   parseCommand = (message) ->
     split = message.split(/\s/)
     command = split[0].substr(1,split[0].length)
     args = split[1..split.length]
     switch command
       when "nick" then changeNick.apply this, args
+      when "me" then me.apply this, args
       else client.send announcement: "There is no such command."
   
   parseMessage = (message) ->
@@ -84,8 +99,15 @@ io.on 'connection', (client) ->
   # Commands
   changeNick = (nick) ->
     client.send announcement: "You changed your nick to #{nick}."
+    client.send updateCookie: nick
     client.broadcast announcement: "User #{user.name} has changed his nick to #{nick}"
     io.broadcast removeUser: user
     user.name = nick
     io.broadcast addUser: user
+    
+  me = ->
+    string = ""
+    for s in arguments
+      string += " #{s}"
+    io.broadcast announcement: "#{user.name} " + string
     

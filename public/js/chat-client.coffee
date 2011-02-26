@@ -17,6 +17,8 @@ message = (obj) ->
     addUser obj.addUser
   else if 'removeUser' of obj
     removeUser obj.removeUser
+  else if 'updateCookie' of obj
+    createCookie 'nick', obj.updateCookie
   else if 'message' of obj
     el.innerHTML = "#{esc(obj.message[0])} - <b> #{esc(obj.message[1])} :</b> #{esc(obj.message[2])}"
   document.getElementById('chat').appendChild(el)
@@ -30,6 +32,13 @@ this.send = ->
 esc = (msg) ->
   msg.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
+createCookie = (name,value) ->
+  date = new Date()
+  date.setTime(date.getTime()+(365*24*60*60*1000))
+  expires = "; expires="+date.toGMTString()
+  document.cookie = name+"="+value+expires+"; path=/"
+
+
 socket = new io.Socket null, {port: 8080, rememberTransport: false}
 socket.connect()
 socket.on 'message', (obj) ->
@@ -42,3 +51,5 @@ socket.on 'message', (obj) ->
     for user in obj.users
       addUser user
   else message(obj)
+
+socket.send {cookie: document.cookie}
