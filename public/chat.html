@@ -4,17 +4,9 @@
     <title>notmIRC Chat client</title>
         
     <script type="text/javascript" src="./js/json.js"></script> <!-- for ie -->
-    <script type="text/javascript" src="http://localhost:8080/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="./socket.io/socket.io.js"></script>
     <script type="text/coffeescript" src="./js/chat-client.coffee"></script>
     <script type="text/javascript" src="./js/coffee-script.js"></script>
-  </head>
-  <body>
-    
-    <h1>Sample chat client</h1>
-    <div id="chat"><p>Connecting...</p></div>
-    <form id="form" onsubmit="send(); return false">
-      <input type="text" autocomplete="off" id="text"><input type="submit" value="Send">
-    </form>
     
     <style>
       #chat { height: 300px; overflow: auto; width: 800px; border: 1px solid #eee; font: 13px Helvetica, Arial; }
@@ -25,7 +17,29 @@
       #form input[type=submit] { cursor: pointer; background: #999; border: none; padding: 6px 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; margin-left: 5px; text-shadow: 0 1px 0 #fff; }
       #form input[type=submit]:hover { background: #A2A2A2; }
       #form input[type=submit]:active { position: relative; top: 2px; }
+      #userlist { padding:10px; padding-top:0px;}
+      .left {float:left;}
+      .clear {clear:both;}
+      #users {
+        list-style:none;
+        margin:0;
+        padding:0;
+      }
     </style>
-    
+  </head>
+  <body>
+    <div id="userlist" class="left">
+      <b>Userlist</b>
+      <ul id="users">
+      </ul>
+      Change username with /nick newnick
+    </div>
+    <div class="left">
+      <div id="chat"><p>Connecting...</p></div>
+      <form id="form" onsubmit="send(); return false">
+        <input type="text" autocomplete="off" id="text"><input type="submit" value="Send">
+      </form>
+    </div>
+    <br class="clear">
   </body>
 </html>
