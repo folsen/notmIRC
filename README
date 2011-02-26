@@ -1,0 +1,5 @@
+Needed to run:
+npm install socket.io
+npm install express
+
+Not yet: npm install coffee-script
