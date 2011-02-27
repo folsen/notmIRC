@@ -40,7 +40,7 @@ app.listen 8080
 # socket.io implementation of chat functionality
 
 io = io.listen app
-buffer = []
+buffer = {}
 clients = []
   
 readCookie = (cookie) ->
@@ -54,11 +54,29 @@ publish = (channel, msg) ->
   for client in clients
     if client.channel is channel
       client.send(msg)
+      
+broadcast = (from, channel, msg) ->
+  for client in clients
+    if client.channel is channel and client.sessionId isnt from.sessionId
+      client.send(msg)
+
+usersOfChannel = (channel) ->
+  _res = []
+  for client in clients
+    if client.channel is channel
+      _res.push client
+  return _res.map (c)-> {name: c.name}
+
+removeClient = (client) ->
+  i = 0
+  for c in clients
+    if c.sessionId is client.sessionId
+      return clients.splice i,1
+    i++
 
 io.on 'connection', (client) ->
   client.name = "user_#{client.sessionId}"
   clients.push client
-  client.send buffer: buffer
   cookiestore = {}
   
   client.on 'message', (message) ->
@@ -68,28 +86,29 @@ io.on 'connection', (client) ->
         client.name = cookiestore.nick
         client.channel = message.channel
       addUser client
+      if buffer[client.channel]
+        client.send buffer: buffer[client.channel]
+      else
+        buffer[client.channel] = []
+        client.send buffer: []
+        client.send {announcement: "You created a new channel.", color: "green"}
+        
       sys.log sys.inspect clients.map (c)-> {id: c.sessionId, name: c.name, channel: c.channel}
+      sys.log sys.inspect usersOfChannel client.channel
     else if message.substr(0,1) is '/'
       parseCommand message
     else
       parseMessage message
 
   client.on 'disconnect', ->
-    client.broadcast {announcement: "#{client.name} disconnected", color: "blue"}
+    publish client.channel, {announcement: "#{client.name} disconnected", color: "blue"}
     removeClient client
-    client.broadcast removeUser: {name: client.name}
+    publish client.channel, removeUser: {name: client.name}
   
   addUser = (client) ->
-    client.send users: clients.map (c)-> {name: c.name}
-    client.broadcast addUser: {name: client.name}
-    client.broadcast {announcement: "#{client.name} connected", color: "green"}
-    
-  removeClient = (client) ->
-    i = 0
-    for c in clients
-      if c.sessionId is client.sessionId
-        return clients.splice i,1
-      i++
+    client.send users: usersOfChannel client.channel
+    broadcast client, client.channel, {addUser: {name: client.name}}
+    publish client.channel, {announcement: "#{client.name} connected", color: "green"}
   
   parseCommand = (message) ->
     split = message.split(/\s/)
@@ -102,23 +121,21 @@ io.on 'connection', (client) ->
   
   parseMessage = (message) ->
     msg = message: [(new Date).toLocaleTimeString(), client.name, message]
-    buffer.push msg
-    buffer.shift if buffer.length > 15 
-    client.send msg
-    client.broadcast msg
+    buffer[client.channel].push msg
+    buffer[client.channel].shift if buffer.length > 15
+    publish client.channel, msg
   
   # Commands
   changeNick = (nick) ->
-    client.send {announcement: "You changed your nick to #{nick}.", color: "green"}
     client.send updateCookie: nick
-    client.broadcast {announcement: "User #{client.name} has changed his nick to #{nick}", color: "green"}
-    io.broadcast removeUser: {name: client.name}
+    publish client.channel, {announcement: "#{client.name} changed nickname to #{nick}", color: "green"}
+    publish client.channel, removeUser: {name: client.name}
     client.name = nick
-    io.broadcast addUser: {name: client.name}
+    publish client.channel, addUser: {name: client.name}
     
   me = ->
     string = ""
     for s in arguments
       string += " #{s}"
-    io.broadcast {announcement: "#{client.name} #{string}", color: "purple"}
+    publish client.channel, {announcement: "#{client.name} #{string}", color: "purple"}
     
