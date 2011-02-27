@@ -64,14 +64,14 @@ io.on 'connection', (client) ->
       parseMessage message
 
   client.on 'disconnect', ->
-    client.broadcast announcement: "#{user.name} disconnected"
+    client.broadcast {announcement: "#{user.name} disconnected", color: "blue"}
     removeUser user
     client.broadcast removeUser: user
   
   addUser = (user) ->
     client.send users: users
     client.broadcast addUser: user
-    client.broadcast announcement: "#{user.name} connected"
+    client.broadcast {announcement: "#{user.name} connected", color: "green"}
     
   removeUser = (user) ->
     i = 0
@@ -87,7 +87,7 @@ io.on 'connection', (client) ->
     switch command
       when "nick" then changeNick.apply this, args
       when "me" then me.apply this, args
-      else client.send announcement: "There is no such command."
+      else client.send {announcement: "There is no such command.", color: "blue"}
   
   parseMessage = (message) ->
     msg = message: [(new Date).toLocaleTimeString(), user.name, message]
@@ -98,9 +98,9 @@ io.on 'connection', (client) ->
   
   # Commands
   changeNick = (nick) ->
-    client.send announcement: "You changed your nick to #{nick}."
+    client.send {announcement: "You changed your nick to #{nick}.", color: "green"}
     client.send updateCookie: nick
-    client.broadcast announcement: "User #{user.name} has changed his nick to #{nick}"
+    client.broadcast {announcement: "User #{user.name} has changed his nick to #{nick}", color: "green"}
     io.broadcast removeUser: user
     user.name = nick
     io.broadcast addUser: user
@@ -109,5 +109,5 @@ io.on 'connection', (client) ->
     string = ""
     for s in arguments
       string += " #{s}"
-    io.broadcast announcement: "#{user.name} " + string
+    io.broadcast {announcement: "#{user.name} #{string}", color: "purple"}
     

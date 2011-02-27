@@ -7,16 +7,17 @@
     <script type="text/javascript" src="./socket.io/socket.io.js"></script>
     <script type="text/coffeescript" src="./js/chat-client.coffee"></script>
     <script type="text/javascript" src="./js/coffee-script.js"></script>
+    <script type="text/javascript" src="./js/resizable-tables.js"></script>
     <link rel="stylesheet" href="/css/style.css" type="text/css" media="screen" charset="utf-8">
   </head>
   <body>
-    <table id="chat-window" cellspacing="0" border="0">
-      <tr><td colspan="2" id="topic">This is the topic bar</td></tr>
+    <table id="chat-window" cellspacing="1" border="0">
+      <tr><td colspan="2" id="topic">#channel_name - This is the topic bar</td></tr>
       <tr><td id="chat">
         <div class="full">
           <p>Connecting...</p>
         </div>
-      </td><td id="userlist">
+      </td><td id="userlist" style="width:250px;">
         <div class="full">
         <b>Userlist</b>
         <ul id="users">

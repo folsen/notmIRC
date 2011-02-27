@@ -12,7 +12,7 @@ removeUser = (user) ->
 message = (obj) ->
   el = document.createElement 'p'
   if 'announcement' of obj
-    el.innerHTML = "<em> #{esc(obj.announcement)} </em>"
+    el.innerHTML = "<em class=\"#{esc(obj.color)}\">* #{esc(obj.announcement)} </em>"
   else if 'addUser' of obj
     addUser obj.addUser
   else if 'removeUser' of obj
