@@ -4,6 +4,10 @@ npm install express
 npm install jade
 npm install ejs
 npm install coffee-script
+npm install mongoose
+
+You need a MongoDB database running.
+With OS X: brew install mongodb
 
 Download and run with
 coffee server.coffee

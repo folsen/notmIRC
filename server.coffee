@@ -5,6 +5,32 @@ io = require 'socket.io'
 sys = require 'sys'
 express = require 'express'
 app = express.createServer()
+mongoose = require('mongoose')
+db = mongoose.connect('mongodb://localhost/notmirc')
+
+Schema = mongoose.Schema
+ObjectId = Schema.ObjectId
+
+MessageSchema = new Schema
+  id: ObjectId,
+  channel: String,
+  time: String,
+  nick: String,
+  msg: {type: String, get: JSON.parse}
+    
+mongoose.model('Message', MessageSchema)
+
+modelMessage = mongoose.model('Message')
+
+instanceMessage = new modelMessage({channel: "help", time: (new Date).toLocaleTimeString(), nick: "ique"})
+instanceMessage.msg = JSON.stringify {announcement: "hejsan allihopa", color: "blue", test: [1,2,{hej: "svej"}]}
+
+instanceMessage.save()
+#msg = new Message()
+sys.log "Bajs"
+sys.log JSON.parse
+sys.log JSON.stringify
+#sys.log sys.inspect msg
 
 # Basic express configuration and route handling
 app.configure ->
