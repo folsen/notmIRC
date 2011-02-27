@@ -20,17 +20,7 @@ MessageSchema = new Schema
     
 mongoose.model('Message', MessageSchema)
 
-modelMessage = mongoose.model('Message')
-
-instanceMessage = new modelMessage({channel: "help", time: (new Date).toLocaleTimeString(), nick: "ique"})
-instanceMessage.msg = JSON.stringify {announcement: "hejsan allihopa", color: "blue", test: [1,2,{hej: "svej"}]}
-
-instanceMessage.save()
-#msg = new Message()
-sys.log "Bajs"
-sys.log JSON.parse
-sys.log JSON.stringify
-#sys.log sys.inspect msg
+Message = mongoose.model('Message')
 
 # Basic express configuration and route handling
 app.configure ->
@@ -76,12 +66,24 @@ readCookie = (cookie) ->
     r[cn.split('=')[0].trim()] = cn.split('=')[1]
   return r
 
-publish = (channel, msg) ->
+publish = (from, channel, msg) ->
+  m = new Message
+    channel: channel, 
+    time: new Date, 
+    nick: from.name, 
+    msg: JSON.stringify(msg)
+  m.save()
   for client in clients
     if client.channel is channel
       client.send(msg)
       
 broadcast = (from, channel, msg) ->
+  m = new Message
+    channel: channel, 
+    time: new Date, 
+    nick: from.name, 
+    msg: JSON.stringify(msg)
+  m.save()
   for client in clients
     if client.channel is channel and client.sessionId isnt from.sessionId
       client.send(msg)
@@ -127,14 +129,14 @@ io.on 'connection', (client) ->
       parseMessage message
 
   client.on 'disconnect', ->
-    publish client.channel, {announcement: "#{client.name} disconnected", color: "blue"}
+    publish client, client.channel, {announcement: "#{client.name} disconnected", color: "blue"}
     removeClient client
-    publish client.channel, removeUser: {name: client.name}
+    publish client, client.channel, removeUser: {name: client.name}
   
   addUser = (client) ->
     client.send users: usersOfChannel client.channel
     broadcast client, client.channel, {addUser: {name: client.name}}
-    publish client.channel, {announcement: "#{client.name} connected", color: "green"}
+    publish client, client.channel, {announcement: "#{client.name} connected", color: "green"}
   
   parseCommand = (message) ->
     split = message.split(/\s/)
@@ -149,19 +151,19 @@ io.on 'connection', (client) ->
     msg = message: [(new Date).toLocaleTimeString(), client.name, message]
     buffer[client.channel].push msg
     buffer[client.channel].shift if buffer.length > 15
-    publish client.channel, msg
+    publish client, client.channel, msg
   
   # Commands
   changeNick = (nick) ->
     client.send updateCookie: nick
-    publish client.channel, {announcement: "#{client.name} changed nickname to #{nick}", color: "green"}
-    publish client.channel, removeUser: {name: client.name}
+    publish client, client.channel, {announcement: "#{client.name} changed nickname to #{nick}", color: "green"}
+    publish client, client.channel, removeUser: {name: client.name}
     client.name = nick
-    publish client.channel, addUser: {name: client.name}
+    publish client, client.channel, addUser: {name: client.name}
     
   me = ->
     string = ""
     for s in arguments
       string += " #{s}"
-    publish client.channel, {announcement: "#{client.name} #{string}", color: "purple"}
+    publish client, client.channel, {announcement: "#{client.name} #{string}", color: "purple"}
     
