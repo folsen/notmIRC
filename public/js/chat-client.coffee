@@ -6,7 +6,7 @@ addUser = (user) ->
 removeUser = (user) ->
   list = document.getElementById('users')
   for child in list.children
-    if child.innerHTML == user.name
+    if child.innerHTML is user.name
       list.removeChild(child)
 
 message = (obj) ->
@@ -38,8 +38,7 @@ createCookie = (name,value) ->
   expires = "; expires="+date.toGMTString()
   document.cookie = name+"="+value+expires+"; path=/"
 
-
-socket = new io.Socket null, {port: 8080, rememberTransport: false}
+this.socket = new io.Socket null, {port: 8080, rememberTransport: false}
 socket.connect()
 socket.on 'message', (obj) ->
   if 'buffer' of obj
@@ -51,5 +50,26 @@ socket.on 'message', (obj) ->
     for user in obj.users
       addUser user
   else message(obj)
+  
+initialize()
 
-socket.send {cookie: document.cookie}
+displayHelpBox = ->
+  document.getElementById('helpbox').style.left = ((window.innerWidth - 500) / 2) + "px"
+  document.getElementById('helpbox').style.top = ((window.innerHeight - 400) / 2) + "px"
+  document.getElementById('helpbox').style.display = "block"
+  
+hideHelpBox = ->
+  document.getElementById('helpbox').style.display = "none"
+  
+onLoad = ->
+  document.getElementById('helplink').onclick = -> 
+    displayHelpBox() 
+    return false
+  document.getElementById('closehelp').onclick = -> 
+    hideHelpBox()
+    return false
+
+try
+  window.addEventListener 'load', onLoad, false
+catch e
+  window.onload = onLoad
