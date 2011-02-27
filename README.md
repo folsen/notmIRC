@@ -1,6 +1,6 @@
 notmIRC installation guide to get up and running
 ================================================
-Install node.js
+Install node.js  
 Install npm
 
 Needed to run:
