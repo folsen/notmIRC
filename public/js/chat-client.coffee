@@ -45,6 +45,7 @@ socket.on 'message', (obj) ->
     document.getElementById('form').style.display='block'
     document.getElementById('chat').innerHTML = ''
     for msg in obj.buffer 
+      console.log msg
       message(msg)
   else if 'users' of obj
     for user in obj.users

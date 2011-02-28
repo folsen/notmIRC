@@ -11,9 +11,9 @@ Needed to run:
     npm install coffee-script
     npm install mongoose
 
-You need a MongoDB database running.
+You need a MongoDB database running.  
 With OS X: 
     brew install mongodb
 
-Download this source and run with
+Download the source and run it with
     coffee server.coffee

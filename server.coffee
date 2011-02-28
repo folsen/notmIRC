@@ -16,7 +16,7 @@ MessageSchema = new Schema
   channel: String,
   time: String,
   nick: String,
-  msg: {type: String, get: JSON.parse}
+  msg: {type: String}
     
 mongoose.model('Message', MessageSchema)
 
@@ -56,7 +56,6 @@ app.listen 8080
 # socket.io implementation of chat functionality
 
 io = io.listen app
-buffer = {}
 clients = []
   
 readCookie = (cookie) ->
@@ -67,23 +66,25 @@ readCookie = (cookie) ->
   return r
 
 publish = (from, channel, msg) ->
-  m = new Message
-    channel: channel, 
-    time: new Date, 
-    nick: from.name, 
-    msg: JSON.stringify(msg)
-  m.save()
+  if not ('addUser' of msg or 'removeUser' of msg)
+    m = new Message
+      channel: channel, 
+      time: new Date, 
+      nick: from.name, 
+      msg: JSON.stringify(msg)
+    m.save()
   for client in clients
     if client.channel is channel
       client.send(msg)
       
 broadcast = (from, channel, msg) ->
-  m = new Message
-    channel: channel, 
-    time: new Date, 
-    nick: from.name, 
-    msg: JSON.stringify(msg)
-  m.save()
+  if not ('addUser' of msg or 'removeUser' of msg)
+    m = new Message
+      channel: channel, 
+      time: new Date, 
+      nick: from.name, 
+      msg: JSON.stringify(msg)
+    m.save()
   for client in clients
     if client.channel is channel and client.sessionId isnt from.sessionId
       client.send(msg)
@@ -101,6 +102,13 @@ removeClient = (client) ->
     if c.sessionId is client.sessionId
       return clients.splice i,1
     i++
+    
+sendBuffer = (client) ->
+  Message.find {channel: client.channel}, ['msg'], (err, docs) ->
+    buffer = docs.map (doc) -> JSON.parse doc.msg
+    client.send buffer: buffer
+    if buffer.length < 1
+      client.send {announcement: "You created a new channel.", color: "green"}
 
 io.on 'connection', (client) ->
   client.name = "user_#{client.sessionId}"
@@ -114,12 +122,7 @@ io.on 'connection', (client) ->
         client.name = cookiestore.nick
         client.channel = message.channel
       addUser client
-      if buffer[client.channel]
-        client.send buffer: buffer[client.channel]
-      else
-        buffer[client.channel] = []
-        client.send buffer: []
-        client.send {announcement: "You created a new channel.", color: "green"}
+      sendBuffer(client)
         
       sys.log sys.inspect clients.map (c)-> {id: c.sessionId, name: c.name, channel: c.channel}
       sys.log sys.inspect usersOfChannel client.channel
@@ -149,8 +152,6 @@ io.on 'connection', (client) ->
   
   parseMessage = (message) ->
     msg = message: [(new Date).toLocaleTimeString(), client.name, message]
-    buffer[client.channel].push msg
-    buffer[client.channel].shift if buffer.length > 15
     publish client, client.channel, msg
   
   # Commands
