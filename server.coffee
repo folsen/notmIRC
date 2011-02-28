@@ -51,7 +51,7 @@ app.error (err, req, res) ->
     locals:
       error: err
 
-app.listen 8080
+app.listen 80
 
 # socket.io implementation of chat functionality
 

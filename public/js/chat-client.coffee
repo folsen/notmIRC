@@ -38,7 +38,7 @@ createCookie = (name,value) ->
   expires = "; expires="+date.toGMTString()
   document.cookie = name+"="+value+expires+"; path=/"
 
-this.socket = new io.Socket null, {port: 8080, rememberTransport: false}
+this.socket = new io.Socket null, {port: 80, rememberTransport: false}
 socket.connect()
 socket.on 'message', (obj) ->
   if 'buffer' of obj
