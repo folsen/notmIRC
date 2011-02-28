@@ -118,9 +118,9 @@ io.on 'connection', (client) ->
   client.on 'message', (message) ->
     if typeof message isnt "string" and 'cookie' of message
       cookiestore = readCookie message.cookie
+      client.channel = message.channel
       if 'nick' of cookiestore
         client.name = cookiestore.nick
-        client.channel = message.channel
       addUser client
       sendBuffer(client)
         
