@@ -40,7 +40,7 @@ body, html {
 #chat {
   margin:0;
   padding:0;
-  overflow:scroll;
+  overflow:auto;
 }
 #chat p {
   margin-top:3px;
